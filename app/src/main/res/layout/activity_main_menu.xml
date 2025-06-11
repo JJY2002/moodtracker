@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainMenuActivity">
 
-    <fragment
+    <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -23,5 +23,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/app_bar_menu"
-        app:labelVisibilityMode="labeled"/>
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/nav_color"
+        app:itemTextColor="@color/nav_color"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>
