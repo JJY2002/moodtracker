@@ -1,69 +1,47 @@
 package com.mad.moodtrackerproject;
 
-import android.content.Intent;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import com.mad.moodtrackerproject.R;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.mad.moodtrackerproject.databinding.ActivityMainMenuBinding;
+import com.mad.moodtrackerproject.ui.main.MainMenuFragment;
 
 public class MainMenuActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
-    private FirebaseUser mUser;
-    private FirebaseFirestore db;
-    private User user;
+    ActivityMainMenuBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main_menu);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
-        mUser = mAuth.getCurrentUser();
-        if (mUser == null) {
-            var i = new Intent(MainMenuActivity.this, MainActivity.class);
-            startActivity(i);
-            finish();
+        binding = ActivityMainMenuBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, MainMenuFragment.newInstance())
+                    .commitNow();
         }
-        getUser(mUser.getUid());
+        binding.bottomNavigationView.setOnItemSelectedListener(item -> {
+            var id = item.getItemId();
+            //Navigation bottom, add similarly with the below code for the other buttons
+            if (id == R.id.navHome) {
+                replaceFragment(new MainMenuFragment());
+                return true;
+            }
+            Toast.makeText(this, "Not implemented yet!", Toast.LENGTH_SHORT).show();
+            return false;
+        });
     }
 
-    private void getUser(String userId) {
-        db.collection("users").document(userId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        user = documentSnapshot.toObject(User.class);
-                        if (user != null) {
-                            // Use user.name, user.email, etc.
-                            Log.d("FIRESTORE", "User name: " + user.name);
-                            Toast.makeText(this, user.name, Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        var i = new Intent(MainMenuActivity.this, MainActivity.class);
-                        startActivity(i);
-                        finish();
-                        Log.d("FIRESTORE", "No such user");
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("FIRESTORE", "Failed to fetch user", e);
-                });
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.container, fragment).commit();
     }
 }
