@@ -115,15 +115,36 @@
         android:padding="15dp"
         android:layout_marginBottom="10dp"
         >
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Progress"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
+            android:orientation="horizontal"
             android:layout_marginBottom="10dp"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Progress"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+            <ImageButton
+                android:id="@+id/refreshChart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/refresh_24px"
+                android:background="@android:color/transparent"
+                android:contentDescription="REFRESH"
+                android:padding="0dp"
+                android:scaleType="centerInside"
             />
+        </LinearLayout>
+
         <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/lineChart"
             android:layout_width="match_parent"
@@ -148,6 +169,7 @@
             android:layout_marginBottom="10dp"
             />
         <LinearLayout
+            android:id="@+id/motivateLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="15dp"
@@ -156,6 +178,7 @@
             android:gravity="center_horizontal|center_vertical"
             >
             <TextView
+                android:id="@+id/menuQuoteTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Believe you can and you're halfway there"

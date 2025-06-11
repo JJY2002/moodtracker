@@ -1,5 +1,6 @@
 package com.mad.moodtrackerproject;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +14,10 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.type.DateTime;
+
+import java.time.LocalDateTime;
+import java.util.Date;
 
 public class MoodCheckInActivity extends AppCompatActivity {
     // Mood emoji buttons (TextViews)
@@ -60,11 +65,9 @@ public class MoodCheckInActivity extends AppCompatActivity {
         });
 
         saveMoodBtn.setOnClickListener(v -> {
-            var userMood = new Mood();
-            userMood.userId = mAuth.getCurrentUser().getUid();
-            userMood.mood = mood;
-            userMood.note = noteEditText.getText().toString();
+            var userMood = new Mood(mAuth.getCurrentUser().getUid(), mood, noteEditText.getText().toString());
             db.collection("mood").add(userMood);
+            startActivity(new Intent(getApplicationContext(), MainMenuActivity.class));
             finish();
         });
     }
