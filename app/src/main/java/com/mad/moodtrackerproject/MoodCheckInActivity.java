@@ -1,10 +1,16 @@
 package com.mad.moodtrackerproject;
 
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,7 +25,7 @@ import com.google.type.DateTime;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-public class MoodCheckInActivity extends AppCompatActivity {
+public class MoodCheckInActivity extends AppCompatActivity implements SensorEventListener {
     // Mood emoji buttons (TextViews)
     private TextView mood1Btn, mood2Btn, mood3Btn, mood4Btn, mood5Btn;
     // Note input
@@ -29,6 +35,9 @@ public class MoodCheckInActivity extends AppCompatActivity {
     private int mood = 1;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private SensorManager sensorManager;
+    private Sensor lightSensor;
+    private float currentLightLevel = -1; // Default if sensor not available
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +74,8 @@ public class MoodCheckInActivity extends AppCompatActivity {
         });
 
         saveMoodBtn.setOnClickListener(v -> {
-            var userMood = new Mood(mAuth.getCurrentUser().getUid(), mood, noteEditText.getText().toString());
+            String lightLevel = (currentLightLevel >= 0) ? currentLightLevel + " lx" : "Unavailable";
+            var userMood = new Mood(mAuth.getCurrentUser().getUid(), mood, noteEditText.getText().toString(), lightLevel);
             db.collection("mood").add(userMood);
             startActivity(new Intent(getApplicationContext(), MainMenuActivity.class));
             finish();
@@ -83,6 +93,15 @@ public class MoodCheckInActivity extends AppCompatActivity {
         mood5Btn = findViewById(R.id.mood5Btn);
         noteEditText = findViewById(R.id.note);
         saveMoodBtn = findViewById(R.id.saveMoodBtn);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager != null) {
+            lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+            if (lightSensor != null) {
+                sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            } else {
+                Toast.makeText(this, "Light sensor not available", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void resetMoodButtonOpacities() {
@@ -105,4 +124,15 @@ public class MoodCheckInActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
+            currentLightLevel = event.values[0];
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 }

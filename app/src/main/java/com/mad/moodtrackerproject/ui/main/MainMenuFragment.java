@@ -2,6 +2,7 @@ package com.mad.moodtrackerproject.ui.main;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -30,9 +31,14 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.mad.moodtrackerproject.MainActivity;
+import com.mad.moodtrackerproject.MainMenuActivity;
 import com.mad.moodtrackerproject.Mood;
 import com.mad.moodtrackerproject.MoodCheckInActivity;
 import com.mad.moodtrackerproject.R;
+import com.mad.moodtrackerproject.User;
+
+import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,6 +63,7 @@ public class MainMenuFragment extends Fragment {
         mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
     }
 
+    @SuppressLint("SetTextI18n")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -65,7 +72,20 @@ public class MainMenuFragment extends Fragment {
         lineChart = rootView.findViewById(R.id.lineChart);
         moodBtn = rootView.findViewById(R.id.moodCheckInBtn);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        var firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser == null) {
+            startActivity(new Intent(rootView.getContext(), MainActivity.class));
+            requireActivity().finish();
+        }
+        String userId = firebaseUser.getUid();
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnCompleteListener(q -> {
+                    var user = q.getResult().toObject(User.class);
+                    TextView menuTxt = rootView.findViewById(R.id.menuTxt);
+                    menuTxt.setText("Hi " + user.name + ", don't forget to check in your mood today!");
+                });
 
         db.collection("mood")
                 .whereEqualTo("userId", userId)
@@ -76,18 +96,20 @@ public class MainMenuFragment extends Fragment {
                     TextView emoji = rootView.findViewById(R.id.moodEmoji);
                     TextView moodType = rootView.findViewById(R.id.moodType);
                     TextView streak = rootView.findViewById(R.id.streakTxt);
+                    TextView note = rootView.findViewById(R.id.noteTxt);
 
                     if (!moodList.isEmpty()) {
                         String[] emojis = {"😡", "🙁", "😐", "🙂", "😄"};
                         String[] moodLabels = {"Angry", "Sad", "Neutral", "Happy", "Joyful"};
-
-                        int latestMood = moodList.get(0).mood;
+                        var moodClass = moodList.get(0);
+                        int latestMood = moodClass.mood;
                         int moodIndex = latestMood - 1;
 
                         if (moodIndex >= 0 && moodIndex < emojis.length) {
                             emoji.setText(emojis[moodIndex]);
                             moodType.setText(moodLabels[moodIndex]);
                         }
+                        note.setText("Note: " + moodClass.note);
 
                         // --- Calculate mood streak ---
                         int streakCount = 1;
@@ -121,6 +143,12 @@ public class MainMenuFragment extends Fragment {
                         }
 
                         streak.setText("Mood Streak: " + streakCount + " day(s)");
+                    }
+                    else {
+                        emoji.setText("");
+                        moodType.setText("");
+                        note.setText("Note: ");
+                        streak.setText("Mood Streak: 0 day(s)");
                     }
                 });
 

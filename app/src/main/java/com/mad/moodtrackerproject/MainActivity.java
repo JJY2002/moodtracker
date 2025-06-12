@@ -41,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mAuth = FirebaseAuth.getInstance();
+        if(mAuth.getCurrentUser() != null) {
+            startActivity(new Intent(MainActivity.this, MainMenuActivity.class));
+            finish();
+        }
 
         // Initialize views
         emailET = findViewById(R.id.emailET);

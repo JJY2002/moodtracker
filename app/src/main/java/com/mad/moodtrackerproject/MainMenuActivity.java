@@ -5,9 +5,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.mad.moodtrackerproject.R;
 
 import com.mad.moodtrackerproject.databinding.ActivityMainMenuBinding;
@@ -32,6 +34,11 @@ public class MainMenuActivity extends AppCompatActivity {
             //Navigation bottom, add similarly with the below code for the other buttons
             if (id == R.id.navHome) {
                 replaceFragment(new MainMenuFragment());
+                return true;
+            } else if (id == R.id.navLogout) {
+                FirebaseAuth.getInstance().signOut();
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                finish();
                 return true;
             }
             Toast.makeText(this, "Not implemented yet!", Toast.LENGTH_SHORT).show();
