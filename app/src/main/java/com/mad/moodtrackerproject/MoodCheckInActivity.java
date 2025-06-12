@@ -125,6 +125,14 @@ public class MoodCheckInActivity extends AppCompatActivity implements SensorEven
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
+    }
+
+    @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
             currentLightLevel = event.values[0];

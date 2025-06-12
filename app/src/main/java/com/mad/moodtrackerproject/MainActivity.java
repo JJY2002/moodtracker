@@ -1,6 +1,10 @@
 package com.mad.moodtrackerproject;
 
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -21,13 +25,15 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     EditText emailET, passwordET;
     Button loginBtn;
     TextView signUpBtn;
     private static final String TAG = "EmailPassword";
     private FirebaseAuth mAuth;
+    private SensorManager sensorManager;
+    private Sensor proximitySensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +70,14 @@ public class MainActivity extends AppCompatActivity {
             startActivity(i);
             finish();
         });
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        if (sensorManager != null) {
+            proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+            if (proximitySensor == null) {
+                Toast.makeText(this, "No proximity sensor found!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void signIn(String email, String password) {
@@ -83,5 +97,40 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (proximitySensor != null) {
+            sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (proximitySensor != null) {
+            sensorManager.unregisterListener(this);
+        }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float distance = event.values[0];
+        if (distance < proximitySensor.getMaximumRange()) {
+            // Something is near
+            loginBtn.setEnabled(false);
+            loginBtn.setAlpha(0.5f); // Visual feedback
+        } else {
+            // Nothing is near
+            loginBtn.setEnabled(true);
+            loginBtn.setAlpha(1.0f);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 }
