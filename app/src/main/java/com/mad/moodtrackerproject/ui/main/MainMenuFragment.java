@@ -1,8 +1,10 @@
 package com.mad.moodtrackerproject.ui.main;
 
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -11,13 +13,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
@@ -29,8 +34,10 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.DefaultValueFormatter;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.WriteBatch;
 import com.mad.moodtrackerproject.MainActivity;
 import com.mad.moodtrackerproject.MainMenuActivity;
 import com.mad.moodtrackerproject.Mood;
@@ -42,8 +49,12 @@ import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 public class MainMenuFragment extends Fragment {
@@ -52,6 +63,9 @@ public class MainMenuFragment extends Fragment {
     private LineChart lineChart;
     private Button moodBtn;
     private List<Mood> moodList = new ArrayList<>();
+    private FirebaseFirestore db;
+    private View rootView;
+    private String userId;
 
     public static MainMenuFragment newInstance() {
         return new MainMenuFragment();
@@ -68,102 +82,45 @@ public class MainMenuFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        rootView = inflater.inflate(R.layout.fragment_main, container, false);
         lineChart = rootView.findViewById(R.id.lineChart);
         moodBtn = rootView.findViewById(R.id.moodCheckInBtn);
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db = FirebaseFirestore.getInstance();
         var firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser == null) {
             startActivity(new Intent(rootView.getContext(), MainActivity.class));
             requireActivity().finish();
         }
-        String userId = firebaseUser.getUid();
-        db.collection("users")
-                .document(userId)
-                .get()
-                .addOnCompleteListener(q -> {
-                    var user = q.getResult().toObject(User.class);
-                    TextView menuTxt = rootView.findViewById(R.id.menuTxt);
-                    menuTxt.setText("Hi " + user.name + ", don't forget to check in your mood today!");
-                });
-
-        db.collection("mood")
-                .whereEqualTo("userId", userId)
-                .orderBy("dateTime", Query.Direction.DESCENDING) // get latest first
-                .get()
-                .addOnCompleteListener(q -> {
-                    var moodList = q.getResult().toObjects(Mood.class);
-                    TextView emoji = rootView.findViewById(R.id.moodEmoji);
-                    TextView moodType = rootView.findViewById(R.id.moodType);
-                    TextView streak = rootView.findViewById(R.id.streakTxt);
-                    TextView note = rootView.findViewById(R.id.noteTxt);
-
-                    if (!moodList.isEmpty()) {
-                        String[] emojis = {"😡", "🙁", "😐", "🙂", "😄"};
-                        String[] moodLabels = {"Angry", "Sad", "Neutral", "Happy", "Joyful"};
-                        var moodClass = moodList.get(0);
-                        int latestMood = moodClass.mood;
-                        int moodIndex = latestMood - 1;
-
-                        if (moodIndex >= 0 && moodIndex < emojis.length) {
-                            emoji.setText(emojis[moodIndex]);
-                            moodType.setText(moodLabels[moodIndex]);
-                        }
-                        note.setText("Note: " + moodClass.note);
-
-                        // --- Calculate mood streak ---
-                        int streakCount = 1;
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
-                        String lastDate = sdf.format(moodList.get(0).dateTime);
-
-                        for (int i = 1; i < moodList.size(); i++) {
-                            Mood current = moodList.get(i);
-                            String currentDate = sdf.format(current.dateTime);
-
-                            // Only count if mood is same and date is exactly 1 day before lastDate
-                            try {
-                                java.util.Calendar cal1 = java.util.Calendar.getInstance();
-                                java.util.Calendar cal2 = java.util.Calendar.getInstance();
-                                cal1.setTime(moodList.get(i - 1).dateTime);
-                                cal2.setTime(current.dateTime);
-                                cal1.add(java.util.Calendar.DATE, -1); // expected streak day
-
-                                boolean sameMood = current.mood == latestMood;
-                                boolean oneDayBefore = sdf.format(cal1.getTime()).equals(currentDate);
-
-                                if (sameMood && oneDayBefore) {
-                                    streakCount++;
-                                } else {
-                                    break; // streak broken
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                break;
-                            }
-                        }
-
-                        streak.setText("Mood Streak: " + streakCount + " day(s)");
-                    }
-                    else {
-                        emoji.setText("");
-                        moodType.setText("");
-                        note.setText("Note: ");
-                        streak.setText("Mood Streak: 0 day(s)");
-                    }
-                });
-
-
-        // Load chart initially
-        loadMoodChartData(userId);
-        ImageButton refreshBtn = rootView.findViewById(R.id.refreshChart);
-        refreshBtn.setOnClickListener(v -> {
-            loadMoodChartData(userId); // Reload chart
-        });
 
         moodBtn.setOnClickListener(v -> {
             Intent i = new Intent(rootView.getContext(), MoodCheckInActivity.class);
             startActivity(i);
         });
+        userId = firebaseUser.getUid();
+        loadMenuData();
+
+        // Load chart initially
+        loadMoodChartData(userId);
+        ImageButton refreshBtn = rootView.findViewById(R.id.refreshChart);
+        refreshBtn.setOnClickListener(v -> {
+            db.collection("mood")
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        WriteBatch batch = db.batch();
+                        for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                            batch.delete(doc.getReference());
+                        }
+                        batch.commit().addOnSuccessListener(unused -> {
+                            Toast.makeText(requireContext(), "All mood data deleted", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(rootView.getContext(), MainMenuActivity.class));
+                            requireActivity().finish();
+                        }).addOnFailureListener(e ->
+                                Toast.makeText(requireContext(), "Failed to delete mood data", Toast.LENGTH_SHORT).show()
+                        );
+                    });
+        });
+
 
         var desc = new Description();
         desc.setText("");
@@ -171,9 +128,6 @@ public class MainMenuFragment extends Fragment {
         lineChart.setHighlightPerTapEnabled(false);
         lineChart.setHighlightPerDragEnabled(false);
         lineChart.setDoubleTapToZoomEnabled(false);
-
-
-        var emoji = "\uD83D\uDE21, \uD83D\uDE10, \uD83D\uDE42, \uD83D\uDE01, \uD83D\uDE04";
 
         LinearLayout moti = rootView.findViewById(R.id.motivateLayout);
         moti.setOnClickListener(v -> {
@@ -244,6 +198,167 @@ public class MainMenuFragment extends Fragment {
             lineChart.getAxisRight().setEnabled(false);
             lineChart.setData(new LineData(dataset));
             lineChart.invalidate();
+        });
+    }
+    @SuppressLint("SetTextI18n")
+    private void loadMenuData() {
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnCompleteListener(q -> {
+                    var user = q.getResult().toObject(User.class);
+                    TextView menuTxt = rootView.findViewById(R.id.menuTxt);
+                    menuTxt.setText("Hi " + user.name + ", don't forget to check in your mood today!");
+                });
+
+        db.collection("mood")
+                .whereEqualTo("userId", userId)
+                .orderBy("dateTime", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(q -> {
+                    TextView emoji = rootView.findViewById(R.id.moodEmoji);
+                    TextView moodType = rootView.findViewById(R.id.moodType);
+                    TextView streak = rootView.findViewById(R.id.streakTxt);
+                    TextView note = rootView.findViewById(R.id.noteTxt);
+
+                    if (q.isSuccessful() && q.getResult() != null && !q.getResult().isEmpty()) {
+                        List<DocumentSnapshot> docs = q.getResult().getDocuments();
+
+                        String[] emojis = {"😡", "🙁", "😐", "🙂", "😄"};
+                        String[] moodLabels = {"Angry", "Sad", "Neutral", "Happy", "Joyful"};
+                        Mood latestMoodObj = docs.get(0).toObject(Mood.class);
+                        int latestMood = latestMoodObj.mood;
+                        int moodIndex = latestMood - 1;
+
+                        if (moodIndex >= 0 && moodIndex < emojis.length) {
+                            emoji.setText(emojis[moodIndex]);
+                            moodType.setText(moodLabels[moodIndex]);
+                        }
+                        note.setText("Note: " + latestMoodObj.note);
+
+                        // --- Check if today's mood already exists and get its document ID ---
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+                        String today = sdf.format(new Date());
+
+                        for (DocumentSnapshot doc : docs) {
+                            Mood mood = doc.toObject(Mood.class);
+                            String docId = doc.getId(); // ✅ this is what you want
+
+                            String moodDate = sdf.format(mood.dateTime);
+                            if (moodDate.equals(today)) {
+                                moodBtn.setText("Edit Mood");
+                                moodBtn.setOnClickListener(v -> {
+                                    Intent i = new Intent(rootView.getContext(), MoodCheckInActivity.class);
+                                    i.putExtra("moodId", docId); // pass the correct doc ID here
+                                    startActivity(i);
+                                });
+                                break;
+                            }
+                        }
+
+                        // --- Calculate streak ---
+                        int streakCount = 1;
+                        for (int i = 1; i < docs.size(); i++) {
+                            Mood prev = docs.get(i - 1).toObject(Mood.class);
+                            Mood curr = docs.get(i).toObject(Mood.class);
+
+                            Calendar cal1 = Calendar.getInstance();
+                            Calendar cal2 = Calendar.getInstance();
+                            cal1.setTime(prev.dateTime);
+                            cal2.setTime(curr.dateTime);
+                            cal1.add(Calendar.DATE, -1);
+
+                            boolean sameMood = curr.mood == latestMood;
+                            boolean oneDayBefore = sdf.format(cal1.getTime()).equals(sdf.format(curr.dateTime));
+
+                            if (sameMood && oneDayBefore) {
+                                streakCount++;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        streak.setText("Mood Streak: " + streakCount + " day(s)");
+                    } else {
+                        emoji.setText("");
+                        moodType.setText("");
+                        note.setText("Note: ");
+                        streak.setText("Mood Streak: 0 day(s)");
+                    }
+                });
+        // At the end of loadMenuData()
+        TextView personalTxt = rootView.findViewById(R.id.personalTxt);
+        Button deleteMsg = rootView.findViewById(R.id.deleteMsgBtn);
+        db.collection("personal").document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String msg = documentSnapshot.getString("message");
+                        if (msg != null && !msg.isEmpty()) {
+                            personalTxt.setText(msg);
+                            deleteMsg.setVisibility(View.VISIBLE); // Show delete button if message exists
+
+                        } else {
+                            personalTxt.setText("Tap to add your message");
+                            deleteMsg.setVisibility(View.GONE);
+                        }
+                    } else {
+                        personalTxt.setText("Tap to add your message");
+                        deleteMsg.setVisibility(View.GONE);
+                    }
+                });
+
+        LinearLayout personalLayout = rootView.findViewById(R.id.personalLayout);
+        personalLayout.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setTitle("Set Personal Message");
+
+
+            final EditText input = new EditText(requireContext());
+            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+            input.setHint("Enter your message here");
+            input.setPadding(32, 16, 32, 16);
+            if(!personalTxt.getText().toString().equals("Tap to add your message")) {
+                builder.setTitle("Edit Personal Message");
+                input.setText(personalTxt.getText());
+            }
+
+            builder.setView(input);
+
+            builder.setPositiveButton("Save", (dialog, which) -> {
+                String newMessage = input.getText().toString().trim();
+                if (!newMessage.isEmpty()) {
+                    Map<String, Object> msgData = new HashMap<>();
+                    msgData.put("message", newMessage);
+
+                    db.collection("personal").document(userId)
+                            .set(msgData)
+                            .addOnSuccessListener(aVoid -> {
+                                personalTxt.setText(newMessage);
+                                Toast.makeText(requireContext(), "Message saved!", Toast.LENGTH_SHORT).show();
+                                deleteMsg.setVisibility(View.VISIBLE); // Show delete button if message exists
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(requireContext(), "Failed to save message", Toast.LENGTH_SHORT).show()
+                            );
+                }
+            });
+
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+            builder.show();
+        });
+        deleteMsg.setOnClickListener(v -> {
+            db.collection("personal").document(userId)
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        personalTxt.setText("Tap to add your message");
+                        deleteMsg.setVisibility(View.GONE);
+                        Toast.makeText(requireContext(), "Message deleted", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(requireContext(), "Failed to delete message", Toast.LENGTH_SHORT).show()
+                    );
         });
     }
 }

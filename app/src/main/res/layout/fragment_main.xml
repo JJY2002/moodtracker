@@ -1,162 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_menu"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".ui.main.MainMenuFragment"
-    android:padding="25dp"
     android:background="@drawable/gradient_bg"
     tools:ignore="HardcodedText,TouchTargetSizeCheck,TextSizeCheck">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="20dp">
-        <TextView
-            android:id="@+id/message"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Home"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            />
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-        <ImageButton
-            android:id="@+id/accountBtn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/account_circle_24px"
-            app:tint="@color/black"
-            android:background="@android:color/transparent"
-            android:contentDescription="REFRESH"
-            android:padding="0dp"
-            android:scaleType="fitCenter"
-            />
-    </LinearLayout>
-    <TextView
-        android:id="@+id/menuTxt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hi John Doe, don't forget to check in your mood today!"
-        android:textSize="18sp"
-        android:textColor="@color/black"
-        android:layout_marginBottom="20dp"
-        />
-    <!--Daily Mood-->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="15dp"
-        android:background="@drawable/custom_border"
-        android:layout_marginBottom="10dp"
-        >
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Daily Mood"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
-
-            <Button
-                android:id="@+id/moodCheckInBtn"
-                android:layout_width="100dp"
-                android:layout_height="40dp"
-                android:background="@drawable/rounded_button"
-                android:padding="0dp"
-                android:text="Check in Mood"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/moodEmoji"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_marginEnd="10dp"
-                    android:contentDescription="Mood Image"
-                    android:text="😊"
-                    android:textAlignment="center"
-                    android:textSize="40sp"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/moodType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Great"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"/>
-                <TextView
-                    android:id="@+id/streakTxt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Mood Streak: 5 days"
-                    android:textSize="12sp"
-                    android:textColor="@color/black"/>
-                <TextView
-                    android:id="@+id/noteTxt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Note: Happiest day of my life"
-                    android:textSize="12sp"
-                    android:textColor="@color/black"/>
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
-
-    <!--Progress-->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/custom_border"
-        android:padding="15dp"
-        android:layout_marginBottom="10dp"
-        >
+        android:padding="25dp">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="10dp"
-            >
+            android:layout_marginBottom="20dp">
             <TextView
+                android:id="@+id/message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Progress"
-                android:textSize="18sp"
+                android:text="Home"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 />
@@ -165,57 +32,251 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"/>
             <ImageButton
-                android:id="@+id/refreshChart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/refresh_24px"
+                android:id="@+id/accountBtn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/account_circle_24px"
+                app:tint="@color/black"
                 android:background="@android:color/transparent"
                 android:contentDescription="REFRESH"
                 android:padding="0dp"
-                android:scaleType="centerInside"
-            />
-        </LinearLayout>
-
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/lineChart"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"/>
-    </LinearLayout>
-
-    <!--Motivation Quote-->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/custom_border"
-        android:padding="15dp"
-        >
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Motivational Quote"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginBottom="10dp"
-            />
-        <LinearLayout
-            android:id="@+id/motivateLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="15dp"
-            android:orientation="vertical"
-            android:background="@drawable/motivational_quote_box"
-            android:gravity="center_horizontal|center_vertical"
-            >
-            <TextView
-                android:id="@+id/menuQuoteTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Believe you can and you're halfway there"
-                android:textSize="20sp"
-                android:textColor="@color/black"
+                android:scaleType="fitCenter"
                 />
         </LinearLayout>
+        <TextView
+            android:id="@+id/menuTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hi John Doe, don't forget to check in your mood today!"
+            android:textSize="18sp"
+            android:textColor="@color/black"
+            android:layout_marginBottom="20dp"
+            />
+        <!--Daily Mood-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="15dp"
+            android:background="@drawable/custom_border"
+            android:layout_marginBottom="10dp"
+            >
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Daily Mood"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <Button
+                    android:id="@+id/moodCheckInBtn"
+                    android:layout_width="100dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/rounded_button"
+                    android:padding="0dp"
+                    android:text="Check in Mood"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/moodEmoji"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="Mood Image"
+                        android:text="😊"
+                        android:textAlignment="center"
+                        android:textSize="40sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/moodType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Great"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"/>
+                    <TextView
+                        android:id="@+id/streakTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mood Streak: 5 days"
+                        android:textSize="12sp"
+                        android:textColor="@color/black"/>
+                    <TextView
+                        android:id="@+id/noteTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Note: Happiest day of my life"
+                        android:textSize="12sp"
+                        android:textColor="@color/black"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!--Progress-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/custom_border"
+            android:padding="15dp"
+            android:layout_marginBottom="10dp"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="10dp"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Progress"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    />
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"/>
+                <ImageButton
+                    android:id="@+id/refreshChart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/refresh_24px"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="REFRESH"
+                    android:padding="0dp"
+                    android:scaleType="centerInside"
+                    />
+            </LinearLayout>
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/lineChart"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"/>
+        </LinearLayout>
+
+        <!--Motivation Quote-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/custom_border"
+            android:padding="15dp"
+            android:layout_marginBottom="10dp"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Motivational Quote"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="10dp"
+                />
+            <LinearLayout
+                android:id="@+id/motivateLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="15dp"
+                android:orientation="vertical"
+                android:background="@drawable/motivational_quote_box"
+                android:gravity="center_horizontal|center_vertical"
+                >
+                <TextView
+                    android:id="@+id/menuQuoteTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Believe you can and you're halfway there"
+                    android:textSize="20sp"
+                    android:textColor="@color/black"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!--Personal Message-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/custom_border"
+            android:padding="15dp"
+            >
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Personal Message"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Button
+                    android:id="@+id/deleteMsgBtn"
+                    android:layout_width="100dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/rounded_button"
+                    android:padding="0dp"
+                    android:text="Delete"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <LinearLayout
+                android:id="@+id/personalLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="15dp"
+                android:orientation="vertical"
+                android:background="@drawable/motivational_quote_box"
+                android:gravity="center_horizontal|center_vertical"
+                >
+                <TextView
+                    android:id="@+id/personalTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Your message here"
+                    android:textSize="20sp"
+                    android:textColor="@color/black"
+                    />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</ScrollView>

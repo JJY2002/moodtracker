@@ -1,5 +1,6 @@
 package com.mad.moodtrackerproject;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -22,6 +23,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.type.DateTime;
 
+import org.w3c.dom.Text;
+
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -37,7 +40,9 @@ public class MoodCheckInActivity extends AppCompatActivity implements SensorEven
     private FirebaseFirestore db;
     private SensorManager sensorManager;
     private Sensor lightSensor;
+    private Mood currentMood;
     private float currentLightLevel = -1; // Default if sensor not available
+    private String moodId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,13 +80,22 @@ public class MoodCheckInActivity extends AppCompatActivity implements SensorEven
 
         saveMoodBtn.setOnClickListener(v -> {
             String lightLevel = (currentLightLevel >= 0) ? currentLightLevel + " lx" : "Unavailable";
-            var userMood = new Mood(mAuth.getCurrentUser().getUid(), mood, noteEditText.getText().toString(), lightLevel);
-            db.collection("mood").add(userMood);
+            if (currentMood != null) {
+                currentMood.mood = mood;
+                currentMood.note = noteEditText.getText().toString();
+                currentMood.ambientLight = lightLevel;
+                db.collection("mood").document(moodId).set(currentMood);
+            }
+            else {
+                var userMood = new Mood(mAuth.getCurrentUser().getUid(), mood, noteEditText.getText().toString(), lightLevel);
+                db.collection("mood").add(userMood);
+            }
             startActivity(new Intent(getApplicationContext(), MainMenuActivity.class));
             finish();
         });
     }
 
+    @SuppressLint("SetTextI18n")
     private void initialize() {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -93,6 +107,18 @@ public class MoodCheckInActivity extends AppCompatActivity implements SensorEven
         mood5Btn = findViewById(R.id.mood5Btn);
         noteEditText = findViewById(R.id.note);
         saveMoodBtn = findViewById(R.id.saveMoodBtn);
+        moodId = getIntent().getStringExtra("moodId");
+        if (moodId != null) {
+            TextView checkInTxt = findViewById(R.id.checkInTxt);
+            checkInTxt.setText("EDIT MOOD");
+            db.collection("mood").document(moodId).get().addOnCompleteListener(d -> {
+                currentMood = d.getResult().toObject(Mood.class);
+                mood = currentMood.mood;
+                resetMoodButtonOpacities();
+                noteEditText.setText(currentMood.note);
+            });
+        }
+
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
             lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
